@@ -38,56 +38,45 @@ void insertionSort(int * sample, int size);
 
 int main() {
 	int * sample;
-	int size = startSize;
+	int sampleSize = 1000;
 
-	unsigned long 
-		startTime	= 0,
-		endTime		= 0,
-
-		insertion[numOfRuns]	= { 0 },
-		heap[numOfRuns]			= { 0 },
-		quick[numOfRuns]		= { 0 },
+	unsigned long
+		startTime = 0,
+		endTime = 0;
+		
+	unsigned long
+		insertionTotalTime	= 0,
+		heapTotalTime		= 0,
+		quickTotalTime		= 0,
 
 		insertionAvgTime	= 0,
 		heapAvgTime			= 0,
 		quickAvgTime		= 0;
 
-	for (int trial = 0; trial < numOfTrials; trial++) {
+	for (int trial = 0; trial < 10; trial++) {
 
-		for (int run = 1; run < numOfRuns + 1; run++) {
+		sample = randomArr(sampleSize);
+
+		for (int run = 0; run < 20; run++) {
 			startTime = static_cast<unsigned long>(time(NULL));
-			//insertion sort
+			insertionSort(sample, sampleSize);
 			endTime = static_cast<unsigned long>(time(NULL));
-			insertion[run] = startTime - endTime;
-			insertion[0] = ( insertion[0] + insertion[run] ) / run;
+
 
 			startTime = static_cast<unsigned long>(time(NULL));
 			//heap sort
 			endTime = static_cast<unsigned long>(time(NULL));
-			heap[run] = startTime - endTime;
 
 			startTime = static_cast<unsigned long>(time(NULL));
 			//quick sort
 			endTime = static_cast<unsigned long>(time(NULL));
-			quick[run] = startTime - endTime;
 
-
-			size += delta;
+			sampleSize += 1000;
 		}
 		
-		
+		delete[] sample;
 
 	}
-
-
-	sample = randomArr(20000);
-	insertionSort(sample, 20000);
-
-	for (int i = 0; i < 1000; i++) {
-		std::cout << sample[i] << std::endl;
-	}
-
-	delete[] sample;
 
 	return 0;
 }

@@ -30,19 +30,33 @@
 #define numOfRuns	20		// number of increments required
 #define numOfTrials	10		// m, number of trials to average from
 
-/*	Purpose: 
+/*	Purpose: Return an array of randomly generated integers
 	Dependencies: stdlib.h and time.h */
 int * randomArr(int size);
 
+/*	Purpose: Sort array in increasing order using insertion sort method
+	Dependencies: none */
 void insertionSort(int * sample, int size);
+
+/*	Purpose: Return index of parent node in heap tree
+	Dependencies: none */
+int parent(int nodePos);
+
+/*	Purpose: Return index of left child in heap tree
+	Dependencies: none */
+int left(int nodePos);
+
+/*	Purpose: Return index of right child in heap tree
+Dependencies: none */
+int right(int nodePos);
 
 int main() {
 	int * sample;
 	int sampleSize = 1000;
 
 	unsigned long
-		startTime = 0,
-		endTime = 0;
+		startTime	= 0,
+		endTime		= 0;
 		
 	unsigned long
 		insertionTotalTime	= 0,
@@ -67,6 +81,7 @@ int main() {
 			//heap sort
 			endTime = static_cast<unsigned long>(time(NULL));
 
+
 			startTime = static_cast<unsigned long>(time(NULL));
 			//quick sort
 			endTime = static_cast<unsigned long>(time(NULL));
@@ -81,7 +96,7 @@ int main() {
 	return 0;
 }
 
-/*	Purpose: 
+/*	Purpose: Return an array of randomly generated integers
 	Dependencies: stdlib.h and time.h */
 int * randomArr(int size) {
 	int * arr = new int[size];
@@ -94,6 +109,10 @@ int * randomArr(int size) {
 	return arr;
 }
 
+// INSERTION SORT
+
+/*	Purpose: Sort array in increasing order using insertion sort method
+	Dependencies: none */
 void insertionSort(int * sample, int size) {
 	for (int i = 0; i < size; i++) {
 		int key = sample[i];
@@ -106,3 +125,53 @@ void insertionSort(int * sample, int size) {
 		sample[j + 1] = key;
 	}
 }
+
+// HEAP SORT
+/*	Purpose: Return index of parent node in heap tree
+	Dependencies: none */
+int parent(int nodePos) {
+	return (nodePos / 2);
+}
+
+/*	Purpose: Return index of left child in heap tree
+	Dependencies: none */
+int left(int nodePos) {
+	return (2 * nodePos);
+}
+/*	Purpose: Return index of right child in heap tree
+	Dependencies: none */
+int right(int nodePos) {
+	return (2 * nodePos + 1);
+}
+
+/*	Purpose: place int at currentPos into the correct position in the heap
+	Dependencies: std::swap */
+void minHeapify(int *A, int size, int currentPos){
+	int smallest = 0;
+	int leftPos = left(currentPos);
+	int rightPos = right(currentPos);
+	if ((leftPos <= size) && (A[leftPos] < A[currentPos]))
+		smallest = leftPos;
+	else
+		smallest = currentPos;
+
+	if ((rightPos <= size) && (A[rightPos] < A[smallest]))
+		smallest = rightPos;
+
+	if (smallest != currentPos) {
+		std::swap(A[currentPos], A[smallest]);
+		minHeapify(A, size, smallest);
+	}
+}
+
+void buildMaxHeap(int *A, int size) {
+	for (int i = size / 2; i > 0; i--)
+		minHeapify(A, size, i);
+}
+
+void heapSort(int *A) {
+
+}
+
+
+// QUICK SORT

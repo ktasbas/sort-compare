@@ -62,6 +62,8 @@ void buildMaxHeap(int *A, int size);
 	Dependencies: std::swap */
 void heapSort(int *A, int size);
 
+int partition(int *A, int p, int r);
+void quicksort(int *A, int p, int r);
 
 int main() {
 	int * sample;
@@ -82,7 +84,7 @@ int main() {
 
 	sample = randomArr(sample_size + 1);
 	sample[0] = -1;
-	heapSort(sample, sample_size);
+	quicksort(sample, 1, sample_size);
 	for (int i = 0; i <= sample_size; i++)
 		std::cout << sample[i] << std::endl;
 
@@ -149,6 +151,7 @@ void insertionSort(int * sample, int size) {
 }
 
 // HEAP SORT
+
 /*	Purpose: Return index of parent node in heap tree
 	Dependencies: none */
 int parent(int node_pos) {
@@ -207,3 +210,24 @@ void heapSort(int *A, int size) {
 
 
 // QUICK SORT
+
+int partition(int *A, int p, int r) {
+	int x = A[r];
+	int i = p - 1;
+	for (int j = p; j <= (r - 1); j++) {
+		if (A[j] <= x) {
+			i = i + 1;
+			std::swap(A[i], A[j]);
+		}
+	}
+	std::swap(A[i + 1], A[r]);
+	return i + 1;
+}
+
+void quicksort(int *A, int p, int r) {
+	if (p < r) {
+		int q = partition(A, p, r);
+		quicksort(A, p, q - 1);
+		quicksort(A, q + 1, r);
+	}
+}

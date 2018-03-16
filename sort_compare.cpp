@@ -40,58 +40,80 @@ void insertionSort(int * sample, int size);
 
 /*	Purpose: Return index of parent node in heap tree
 	Dependencies: none */
-int parent(int nodePos);
+int parent(int node_pos);
 
 /*	Purpose: Return index of left child in heap tree
 	Dependencies: none */
-int left(int nodePos);
+int left(int node_pos);
 
 /*	Purpose: Return index of right child in heap tree
 Dependencies: none */
-int right(int nodePos);
+int right(int node_pos);
+
+/*	Purpose: place int at current_pos into the correct position in the heap
+	Dependencies: std::swap */
+void maxHeapify(int *A, int size, int current_pos);
+
+/*	Purpose: convert array into a max heap
+	Dependencies: std::swap */
+void buildMaxHeap(int *A, int size);
+
+/*	Purpose: sort array in increasing order
+	Dependencies: std::swap */
+void heapSort(int *A, int size);
+
 
 int main() {
 	int * sample;
-	int sampleSize = 1000;
+	int sample_size = 30;
 
 	unsigned long
-		startTime	= 0,
-		endTime		= 0;
+		start_time	= 0,
+		end_time		= 0;
 		
 	unsigned long
-		insertionTotalTime	= 0,
-		heapTotalTime		= 0,
-		quickTotalTime		= 0,
+		ins_total_time	= 0,
+		heap_total_time		= 0,
+		quick_total_time		= 0,
 
-		insertionAvgTime	= 0,
-		heapAvgTime			= 0,
-		quickAvgTime		= 0;
+		ins_avg_time	= 0,
+		heap_avg_time			= 0,
+		quick_avg_time		= 0;
 
+	sample = randomArr(sample_size + 1);
+	sample[0] = -1;
+	heapSort(sample, sample_size);
+	for (int i = 0; i <= sample_size; i++)
+		std::cout << sample[i] << std::endl;
+
+	delete[] sample;
+
+	/*
 	for (int trial = 0; trial < 10; trial++) {
 
-		sample = randomArr(sampleSize);
+		sample = randomArr(sample_size);
 
 		for (int run = 0; run < 20; run++) {
-			startTime = static_cast<unsigned long>(time(NULL));
-			insertionSort(sample, sampleSize);
-			endTime = static_cast<unsigned long>(time(NULL));
+			start_time = static_cast<unsigned long>(time(NULL));
+			insertionSort(sample, sample_size);
+			end_time = static_cast<unsigned long>(time(NULL));
 
 
-			startTime = static_cast<unsigned long>(time(NULL));
+			start_time = static_cast<unsigned long>(time(NULL));
 			//heap sort
-			endTime = static_cast<unsigned long>(time(NULL));
+			end_time = static_cast<unsigned long>(time(NULL));
 
 
-			startTime = static_cast<unsigned long>(time(NULL));
+			start_time = static_cast<unsigned long>(time(NULL));
 			//quick sort
-			endTime = static_cast<unsigned long>(time(NULL));
+			end_time = static_cast<unsigned long>(time(NULL));
 
-			sampleSize += 1000;
+			sample_size += 1000;
 		}
 		
 		delete[] sample;
-
 	}
+	*/
 
 	return 0;
 }
@@ -114,11 +136,11 @@ int * randomArr(int size) {
 /*	Purpose: Sort array in increasing order using insertion sort method
 	Dependencies: none */
 void insertionSort(int * sample, int size) {
-	for (int i = 0; i < size; i++) {
+	for (int i = 1; i < size; i++) {
 		int key = sample[i];
 
 		int j = i - 1;
-		while (j >= 0 && sample[j] > key) {
+		while (j >= 1 && sample[j] > key) {
 			sample[j + 1] = sample[j];
 			j--;
 		}
@@ -129,48 +151,58 @@ void insertionSort(int * sample, int size) {
 // HEAP SORT
 /*	Purpose: Return index of parent node in heap tree
 	Dependencies: none */
-int parent(int nodePos) {
-	return (nodePos / 2);
+int parent(int node_pos) {
+	return (node_pos / 2);
 }
 
 /*	Purpose: Return index of left child in heap tree
 	Dependencies: none */
-int left(int nodePos) {
-	return (2 * nodePos);
+int left(int node_pos) {
+	return (2 * node_pos);
 }
 /*	Purpose: Return index of right child in heap tree
 	Dependencies: none */
-int right(int nodePos) {
-	return (2 * nodePos + 1);
+int right(int node_pos) {
+	return (2 * node_pos + 1);
 }
 
-/*	Purpose: place int at currentPos into the correct position in the heap
+/*	Purpose: place int at current_pos into the correct position in the heap
 	Dependencies: std::swap */
-void minHeapify(int *A, int size, int currentPos){
-	int smallest = 0;
-	int leftPos = left(currentPos);
-	int rightPos = right(currentPos);
-	if ((leftPos <= size) && (A[leftPos] < A[currentPos]))
-		smallest = leftPos;
+void maxHeapify(int *A, int size, int current_pos){
+	int largest;
+	int left_pos = left(current_pos);
+	int right_pos = right(current_pos);
+	if ((left_pos <= size) && (A[left_pos] > A[current_pos]))
+		largest = left_pos;
 	else
-		smallest = currentPos;
+		largest = current_pos;
 
-	if ((rightPos <= size) && (A[rightPos] < A[smallest]))
-		smallest = rightPos;
+	if ((right_pos <= size) && (A[right_pos] > A[largest]))
+		largest = right_pos;
 
-	if (smallest != currentPos) {
-		std::swap(A[currentPos], A[smallest]);
-		minHeapify(A, size, smallest);
+	if (largest != current_pos) {
+		std::swap(A[current_pos], A[largest]);
+		maxHeapify(A, size, largest);
 	}
 }
 
+/*	Purpose: convert array into a max heap
+	Dependencies: std::swap */
 void buildMaxHeap(int *A, int size) {
-	for (int i = size / 2; i > 0; i--)
-		minHeapify(A, size, i);
+	for (int i = (size / 2); i > 0; i--)
+		maxHeapify(A, size, i);
 }
 
-void heapSort(int *A) {
-
+/*	Purpose: sort array in increasing order
+	Dependencies: std::swap */
+void heapSort(int *A, int size) {
+	int nodes_left = size;
+	buildMaxHeap(A, size);
+	for (int i = size; i > 1; i--) {
+		std::swap(A[1], A[i]);
+		nodes_left--;
+		maxHeapify(A, nodes_left, 1);
+	}
 }
 
 

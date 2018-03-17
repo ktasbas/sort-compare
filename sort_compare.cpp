@@ -1,5 +1,5 @@
-//M. Kaan Tasbas | mktasbas@gmail.com
-//13 March 2018
+// M. Kaan Tasbas | mktasbas@gmail.com
+// 13 March 2018
 
 /* Info
 	This program contains implementations of insertion sort, heap sort, and quick sort 
@@ -9,30 +9,34 @@
 	used to test each alg with a starting sample size of 1,000 that is incremented by 1,000
 	until we reach 20,000 samples. 10 trials are done with a new array each time. The average
 	of these 10 runs are then used.
-*/
 
-/* Todo
-	Generate random array
-	Implement insertion sort
-	Implement heap sort
-	Implement quick sort
-	Calculate averages
-	Run tests
+	For proper implementation of the heap array, array index 0 is not used. All data begins
+	at index 1. For consistency, this method is used for all arrays containing sample data
+	to be sorted.
 */
 
 #include <iostream>
+#include <iomanip>
 #include <stdlib.h>
-#include <time.h>
+#include <chrono>
 
-#define startSize	1000	// ns, inital sample size
-#define delta		1000	// delta, sample increment between runs
-#define endSize		20000	// nf, final sample size
-#define numOfRuns	20		// number of increments required
-#define numOfTrials	10		// m, number of trials to average from
+#define START_SIZE	1000	// ns, inital sample size
+#define DELTA		1000	// delta, sample increment between runs
+#define END_SIZE	20000	// nf, final sample size
+#define RUNS		20		// number of increments required
+#define TRIALS		10		// m, number of trials to average from
 
 /*	Purpose: Return an array of randomly generated integers
-	Dependencies: stdlib.h and time.h */
+	Dependencies: chrono.h, initialization of srand at beginning of program */
 int * randomArr(int size);
+
+/*	Purpose: Return a new array copied from the original passed in
+	Dependencies: none */
+int * copyArr(int *org, int size);
+
+/*	Purpose: Print a double array to screen with 6 fixed decimal places
+	Dependencies: iostream.h, iomanip.h */
+void printArr(double *A, int size);
 
 /*	Purpose: Sort array in increasing order using insertion sort method
 	Dependencies: none */
@@ -62,70 +66,125 @@ void buildMaxHeap(int *A, int size);
 	Dependencies: std::swap */
 void heapSort(int *A, int size);
 
+/*	Purpose: sort selected area of array from p to r in increasing order
+	Dependencies: std::swap */
 int partition(int *A, int p, int r);
+
+/*	Purpose: divide array into sections to sort using divide and conquer method
+	Dependencies: none */
 void quicksort(int *A, int p, int r);
 
 int main() {
-	int * sample;
-	int sample_size = 30;
+	int *ins_sample, *heap_sample, *quick_sample;
+	int sample_size;
 
-	unsigned long
-		start_time	= 0,
-		end_time		= 0;
-		
-	unsigned long
-		ins_total_time	= 0,
-		heap_total_time		= 0,
-		quick_total_time		= 0,
+	std::chrono::high_resolution_clock::time_point//<std::chrono::high_resolution_clock>
+		start_time,
+		end_time;
 
-		ins_avg_time	= 0,
-		heap_avg_time			= 0,
-		quick_avg_time		= 0;
+	std::chrono::duration<double>
+		ins_run_time[TRIALS][RUNS],
+		heap_run_time[TRIALS][RUNS],
+		quick_run_time[TRIALS][RUNS];
 
-	sample = randomArr(sample_size + 1);
-	sample[0] = -1;
-	quicksort(sample, 1, sample_size);
-	for (int i = 0; i <= sample_size; i++)
-		std::cout << sample[i] << std::endl;
+	double
+		ins_avg_time[RUNS] = { 0 },
+		heap_avg_time[RUNS] = { 0 },
+		quick_avg_time[RUNS] = { 0 };
 
-	delete[] sample;
+	//seed rand() function with time for actual random numbers
+	srand((int)time(0));
+	
+	for (int trial = 0; trial < TRIALS; trial++) {
+		// reset sample_size to repeat testing
+		sample_size = START_SIZE;
 
-	/*
-	for (int trial = 0; trial < 10; trial++) {
+		std::cout << " * Trial # " << (trial + 1) << " *\n";
 
-		sample = randomArr(sample_size);
+		for (int run = 0; run < RUNS; run++) {
+			std::cout << "  * Run # " << (run + 1) << " *\n";
 
-		for (int run = 0; run < 20; run++) {
-			start_time = static_cast<unsigned long>(time(NULL));
-			insertionSort(sample, sample_size);
-			end_time = static_cast<unsigned long>(time(NULL));
+			/* generate random array then copy it twice
+			 each sort needs an original array to run on */
+			ins_sample = randomArr(sample_size + 1);
+			heap_sample = copyArr(ins_sample, sample_size + 1);
+			quick_sample = copyArr(ins_sample, sample_size + 1);
 
+			// first element not used, set to -1
+			ins_sample[0] = heap_sample[0] = quick_sample[0] = -1;
 
-			start_time = static_cast<unsigned long>(time(NULL));
-			//heap sort
-			end_time = static_cast<unsigned long>(time(NULL));
+			// profile insertion sort
+			std::cout << "   ** Running insertion sort **\n";
+			start_time = std::chrono::high_resolution_clock::now();
+			insertionSort(ins_sample, sample_size);
+			end_time = std::chrono::high_resolution_clock::now();
+			{
+				using namespace std::chrono;
+				ins_run_time[trial][run] = duration_cast<duration<double>>(end_time - start_time);
+			}
 
+			// profile heap sort
+			std::cout << "   ** Running heap sort **\n";
+			start_time = std::chrono::high_resolution_clock::now();
+			heapSort(ins_sample, sample_size);
+			end_time = std::chrono::high_resolution_clock::now();
+			{
+				using namespace std::chrono;
+				heap_run_time[trial][run] = duration_cast<duration<double>>(end_time - start_time);
+			}
 
-			start_time = static_cast<unsigned long>(time(NULL));
-			//quick sort
-			end_time = static_cast<unsigned long>(time(NULL));
+			// profile quicksort
+			std::cout << "   ** Running quicksort **\n";
+			start_time = std::chrono::high_resolution_clock::now();
+			quicksort(quick_sample, 1, sample_size);
+			end_time = std::chrono::high_resolution_clock::now();
+			{
+				using namespace std::chrono;
+				quick_run_time[trial][run] = duration_cast<duration<double>>(end_time - start_time);
+			}
 
-			sample_size += 1000;
+			// recover memory of sample array's
+			delete[] ins_sample;
+			delete[] heap_sample;
+			delete[] quick_sample;
+
+			// increase sample size in accordance with selected delta
+			sample_size += DELTA;
 		}
-		
-		delete[] sample;
 	}
-	*/
 
+	// calculate avg running time of each sample size for each alg
+	for (int run = 0; run < RUNS; run++) {
+		for (int trial = 0; trial < TRIALS; trial++) {
+			// calculate average time in milliseconds
+			ins_avg_time[run] += ((ins_run_time[trial][run].count() / TRIALS) * 1000);
+			heap_avg_time[run] += heap_run_time[trial][run].count() / TRIALS;
+			quick_avg_time[run] += quick_run_time[trial][run].count() / TRIALS;
+		}
+	}
+
+	// print average times to screen
+	std::cout << "\nAlg Running Times:\n\n";
+
+	std::cout << "Insertion Sort:\n";
+	printArr(ins_avg_time, RUNS);
+	std::cout << std::endl;
+
+	std::cout << "Heap Sort:\n";
+	printArr(heap_avg_time, RUNS);
+	std::cout << std::endl;
+
+	std::cout << "Quicksort:\n";
+	printArr(quick_avg_time, RUNS);
+	std::cout << std::endl;
+	
 	return 0;
 }
 
 /*	Purpose: Return an array of randomly generated integers
-	Dependencies: stdlib.h and time.h */
+	Dependencies: chrono.h, initialization of srand at beginning of program */
 int * randomArr(int size) {
 	int * arr = new int[size];
-
-	srand((unsigned)time(NULL));
 
 	for (int i = 0; i < size; i++)
 		arr[i] = rand();
@@ -133,20 +192,39 @@ int * randomArr(int size) {
 	return arr;
 }
 
+/*	Purpose: Return a new array copied from the original passed in
+	Dependencies: none */
+int * copyArr(int *org, int size) {
+	int * arr = new int[size];
+	for (int i = 0; i < size; i++)
+		arr[i] = org[i];
+	return arr;
+}
+
+/*	Purpose: Print a double array to screen with 6 fixed decimal places
+	Dependencies: iostream.h, iomanip.h */
+void printArr(double *A, int size) {
+	std::cout << std::fixed << std::setprecision(6);
+	for (int i = 0; i < size; i++) {
+		std::cout << A[i] << "\n";
+	}
+}
+
 // INSERTION SORT
 
 /*	Purpose: Sort array in increasing order using insertion sort method
 	Dependencies: none */
-void insertionSort(int * sample, int size) {
-	for (int i = 1; i < size; i++) {
-		int key = sample[i];
+void insertionSort(int *A, int size) {
+	for (int i = 2; i <= size; i++) {
+		int key = A[i];
 
 		int j = i - 1;
-		while (j >= 1 && sample[j] > key) {
-			sample[j + 1] = sample[j];
+		while (j > 0 && A[j] > key) {
+			A[j + 1] = A[j];
 			j--;
+			//std::cout << j << std::endl;
 		}
-		sample[j + 1] = key;
+		A[j + 1] = key;
 	}
 }
 
@@ -208,9 +286,10 @@ void heapSort(int *A, int size) {
 	}
 }
 
-
 // QUICK SORT
 
+/*	Purpose: sort selected area of array from p to r in increasing order
+	Dependencies: std::swap */
 int partition(int *A, int p, int r) {
 	int x = A[r];
 	int i = p - 1;
@@ -224,6 +303,8 @@ int partition(int *A, int p, int r) {
 	return i + 1;
 }
 
+/*	Purpose: divide array into sections to sort using divide and conquer method 
+	Dependencies: none */
 void quicksort(int *A, int p, int r) {
 	if (p < r) {
 		int q = partition(A, p, r);

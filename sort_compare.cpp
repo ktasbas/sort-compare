@@ -158,13 +158,13 @@ int main() {
 		for (int trial = 0; trial < TRIALS; trial++) {
 			// calculate average time in milliseconds
 			ins_avg_time[run] += ((ins_run_time[trial][run].count() / TRIALS) * 1000);
-			heap_avg_time[run] += heap_run_time[trial][run].count() / TRIALS;
-			quick_avg_time[run] += quick_run_time[trial][run].count() / TRIALS;
+			heap_avg_time[run] += ((heap_run_time[trial][run].count() / TRIALS) * 1000);
+			quick_avg_time[run] += ((quick_run_time[trial][run].count() / TRIALS) * 1000);
 		}
 	}
 
 	// print average times to screen
-	std::cout << "\nAlg Running Times:\n\n";
+	std::cout << "\nAlg Running Times (milliseconds):\n\n";
 
 	std::cout << "Insertion Sort:\n";
 	printArr(ins_avg_time, RUNS);

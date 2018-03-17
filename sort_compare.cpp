@@ -103,8 +103,10 @@ int main() {
 		if(DEBUG_LEVEL == 0) std::cout << " * Trial # " << (trial + 1) << " *\n";
 
 		for (int run = 0; run < RUNS; run++) {
-			if (DEBUG_LEVEL == 0) std::cout << "  * Run # " << (run + 1) << " *\n";
-
+			if (DEBUG_LEVEL == 0) {
+				std::cout << "  * Run # " << (run + 1) << " *\n";
+				std::cout << "  * Sample Size " << (sample_size) << " *\n";
+			}
 			/* generate 3 copies of new random array */
 			ins_sample = randomArr(sample_size + 1);
 			heap_sample = copyArr(ins_sample, sample_size + 1);

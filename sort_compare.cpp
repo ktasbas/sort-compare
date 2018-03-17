@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <chrono>
 
+#define DEBUG_LEVEL	0		// 0 for release build, 1 for debug build
 #define START_SIZE	1000	// ns, inital sample size
 #define DELTA		1000	// delta, sample increment between runs
 #define END_SIZE	20000	// nf, final sample size
@@ -99,13 +100,12 @@ int main() {
 		// reset sample_size to repeat testing
 		sample_size = START_SIZE;
 
-		std::cout << " * Trial # " << (trial + 1) << " *\n";
+		if(DEBUG_LEVEL == 0) std::cout << " * Trial # " << (trial + 1) << " *\n";
 
 		for (int run = 0; run < RUNS; run++) {
-			std::cout << "  * Run # " << (run + 1) << " *\n";
+			if (DEBUG_LEVEL == 0) std::cout << "  * Run # " << (run + 1) << " *\n";
 
-			/* generate random array then copy it twice
-			 each sort needs an original array to run on */
+			/* generate 3 copies of new random array */
 			ins_sample = randomArr(sample_size + 1);
 			heap_sample = copyArr(ins_sample, sample_size + 1);
 			quick_sample = copyArr(ins_sample, sample_size + 1);
@@ -114,7 +114,7 @@ int main() {
 			ins_sample[0] = heap_sample[0] = quick_sample[0] = -1;
 
 			// profile insertion sort
-			std::cout << "   ** Running insertion sort **\n";
+			if (DEBUG_LEVEL == 0) std::cout << "   ** Running insertion sort **\n";
 			start_time = std::chrono::high_resolution_clock::now();
 			insertionSort(ins_sample, sample_size);
 			end_time = std::chrono::high_resolution_clock::now();
@@ -124,9 +124,9 @@ int main() {
 			}
 
 			// profile heap sort
-			std::cout << "   ** Running heap sort **\n";
+			if (DEBUG_LEVEL == 0) std::cout << "   ** Running heap sort **\n";
 			start_time = std::chrono::high_resolution_clock::now();
-			heapSort(ins_sample, sample_size);
+			heapSort(heap_sample, sample_size);
 			end_time = std::chrono::high_resolution_clock::now();
 			{
 				using namespace std::chrono;
@@ -134,13 +134,27 @@ int main() {
 			}
 
 			// profile quicksort
-			std::cout << "   ** Running quicksort **\n";
+			if (DEBUG_LEVEL == 0) std::cout << "   ** Running quicksort **\n";
 			start_time = std::chrono::high_resolution_clock::now();
 			quicksort(quick_sample, 1, sample_size);
 			end_time = std::chrono::high_resolution_clock::now();
 			{
 				using namespace std::chrono;
 				quick_run_time[trial][run] = duration_cast<duration<double>>(end_time - start_time);
+			}
+
+			if (DEBUG_LEVEL == 1) {
+				// section to print debug info
+
+				std::cout << "heap_sample\n";
+				for (int i = 0; i < 25; i++)
+					std::cout << heap_sample[i] << "\n";
+				std::cout << std::endl;
+				
+				std::cout << "quick_sample\n";
+				for (int i = 0; i < 25; i++)
+					std::cout << quick_sample[i] << "\n";
+				std::cout << std::endl;
 			}
 
 			// recover memory of sample array's
@@ -162,21 +176,29 @@ int main() {
 			quick_avg_time[run] += ((quick_run_time[trial][run].count() / TRIALS) * 1000);
 		}
 	}
+	if (DEBUG_LEVEL == 0) {
+		// print average times to screen
+		std::cout << "\nAlg Running Times (milliseconds):\n\n";
 
-	// print average times to screen
-	std::cout << "\nAlg Running Times (milliseconds):\n\n";
+		std::cout << "Insertion Sort:\n";
+		printArr(ins_avg_time, RUNS);
+		std::cout << std::endl;
 
-	std::cout << "Insertion Sort:\n";
-	printArr(ins_avg_time, RUNS);
-	std::cout << std::endl;
+		std::cout << "Heap Sort:\n";
+		printArr(heap_avg_time, RUNS);
+		std::cout << std::endl;
 
-	std::cout << "Heap Sort:\n";
-	printArr(heap_avg_time, RUNS);
-	std::cout << std::endl;
+		std::cout << "Quicksort:\n";
+		printArr(quick_avg_time, RUNS);
+		std::cout << std::endl;
+	}
+	else if (DEBUG_LEVEL == 1) {
+		// section to print debug info
 
-	std::cout << "Quicksort:\n";
-	printArr(quick_avg_time, RUNS);
-	std::cout << std::endl;
+		std::cout << "Heap Sort:\n";
+		printArr(heap_avg_time, RUNS);
+		std::cout << std::endl;
+	}
 	
 	return 0;
 }
@@ -195,7 +217,7 @@ int * randomArr(int size) {
 /*	Purpose: Return a new array copied from the original passed in
 	Dependencies: none */
 int * copyArr(int *org, int size) {
-	int * arr = new int[size];
+	int *arr = new int[size];
 	for (int i = 0; i < size; i++)
 		arr[i] = org[i];
 	return arr;
